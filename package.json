@@ -67,7 +67,7 @@
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.2",
-    "@commitlint/config-conventional": "^20.0.0",
+    "@commitlint/config-conventional": "^21.0.2",
     "@neovici/cfg": "^2.8.0",
     "@neovici/testing": "^2.3.0",
     "@playwright/test": "^1.58.1",
