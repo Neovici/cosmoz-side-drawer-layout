@@ -21,10 +21,14 @@ const CosmozSideDrawerLayout = (host: Element & Props) => {
 			const newSize = entries[0].contentRect.width;
 			if (newSize < lastObservedSize) {
 				if (lastObservedSize >= leftBreakpoint && newSize < leftBreakpoint) {
-					host.dispatchEvent(new CustomEvent('close', { detail: { side: 'left' } }));
+					host.dispatchEvent(
+						new CustomEvent('close', { detail: { side: 'left' } }),
+					);
 				}
 				if (lastObservedSize >= rightBreakpoint && newSize < rightBreakpoint) {
-					host.dispatchEvent(new CustomEvent('close', { detail: { side: 'right' } }));
+					host.dispatchEvent(
+						new CustomEvent('close', { detail: { side: 'right' } }),
+					);
 				}
 			}
 			lastObservedSize = newSize;
@@ -41,13 +45,13 @@ const CosmozSideDrawerLayout = (host: Element & Props) => {
 				z-index: unset;
 			}
 
-			:host(:has([slot="left-drawer"])) .click-layer {
+			:host([left-drawer-open]) .click-layer {
 				display: none;
 			}
 
-			:host(:has([slot="left-drawer"])) {
+			:host([left-drawer-open]) {
 				--left-drawer-current-width: var(--left-drawer-width);
-				--cosmoz-side-drawer-layout-gap: 5px;
+				--cosmoz-side-drawer-layout-left-gap: var(--cz-spacing);
 			}
 		}
 	`);
@@ -60,13 +64,13 @@ const CosmozSideDrawerLayout = (host: Element & Props) => {
 				z-index: unset;
 			}
 
-			:host(:has([slot="right-drawer"])) .click-layer {
+			:host([right-drawer-open]) .click-layer {
 				display: none;
 			}
 
-			:host(:has([slot="right-drawer"])) {
+			:host([right-drawer-open]) {
 				--right-drawer-current-width: var(--right-drawer-width);
-				--cosmoz-side-drawer-layout-gap: 5px;
+				--cosmoz-side-drawer-layout-right-gap: var(--cz-spacing);
 			}
 		}
 	`);
@@ -91,8 +95,13 @@ const style = css`
 		position: absolute;
 		z-index: 999;
 		inset: 0;
-		background: var(--cosmoz-side-drawer-layout-backdrop-color, rgba(0, 0, 0, 0.3));
-		transition: display 0.2s allow-discrete, opacity 0.2s;
+		background: var(
+			--cosmoz-side-drawer-layout-backdrop-color,
+			rgba(0, 0, 0, 0.3)
+		);
+		transition:
+			display 0.2s allow-discrete,
+			opacity 0.2s;
 		display: none;
 		opacity: 0;
 	}
@@ -114,7 +123,6 @@ const style = css`
 		:host([right-drawer-open]) .click-layer {
 			opacity: 0;
 		}
-	}
 	}
 
 	.main-wrapper {
@@ -160,12 +168,12 @@ const style = css`
 
 	:host([left-drawer-open]) {
 		--left-drawer-current-width: var(--left-drawer-width);
-		--cosmoz-side-drawer-layout-gap: 5px;
+		--cosmoz-side-drawer-layout-left-gap: var(--cz-spacing);
 	}
 
 	:host([right-drawer-open]) {
 		--right-drawer-current-width: var(--right-drawer-width);
-		--cosmoz-side-drawer-layout-gap: 5px;
+		--cosmoz-side-drawer-layout-right-gap: var(--cz-spacing);
 	}
 
 	.wrapper {
@@ -174,7 +182,6 @@ const style = css`
 		box-sizing: border-box;
 		width: 100%;
 		height: 100%;
-		gap: var(--cosmoz-side-drawer-layout-gap, 0);
 		--drawer-mode: overlay;
 	}
 
@@ -199,11 +206,13 @@ const style = css`
 	.left {
 		left: 0;
 		width: var(--left-drawer-current-width, 0);
+		margin-right: var(--cosmoz-side-drawer-layout-left-gap, var(--cz-spacing));
 	}
 
 	.right {
 		right: 0;
 		width: var(--right-drawer-current-width, 0);
+		margin-left: var(--cosmoz-side-drawer-layout-right-gap, var(--cz-spacing));
 	}
 
 	.main {
