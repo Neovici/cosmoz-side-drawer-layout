@@ -2,8 +2,8 @@ import { useStyleSheet } from '@neovici/cosmoz-utils/hooks/use-stylesheet';
 import { component, css, html, useEffect } from '@pionjs/pion';
 
 type Props = {
-	leftBreakpoint?: string;
-	rightBreakpoint?: string;
+	breakpoint?: string;
+	side?: 'left' | 'right';
 };
 
 const parseBreakpoint = (value: string | undefined, fallback: number) => {
@@ -12,72 +12,47 @@ const parseBreakpoint = (value: string | undefined, fallback: number) => {
 };
 
 const CosmozSideDrawerLayout = (host: Element & Props) => {
-	const leftBreakpoint = parseBreakpoint(host.leftBreakpoint, 1024);
-	const rightBreakpoint = parseBreakpoint(host.rightBreakpoint, 1024);
+	const breakpoint = parseBreakpoint(host.breakpoint, 1024);
 
 	useEffect(() => {
 		let lastObservedSize = 0;
 		const observer = new ResizeObserver((entries) => {
 			const newSize = entries[0].contentRect.width;
-			if (newSize < lastObservedSize) {
-				if (lastObservedSize >= leftBreakpoint && newSize < leftBreakpoint) {
-					host.dispatchEvent(
-						new CustomEvent('close', { detail: { side: 'left' } }),
-					);
-				}
-				if (lastObservedSize >= rightBreakpoint && newSize < rightBreakpoint) {
-					host.dispatchEvent(
-						new CustomEvent('close', { detail: { side: 'right' } }),
-					);
-				}
+			if (
+				newSize < lastObservedSize &&
+				lastObservedSize >= breakpoint &&
+				newSize < breakpoint
+			) {
+				host.dispatchEvent(new CustomEvent('close'));
 			}
 			lastObservedSize = newSize;
 		});
 		observer.observe(host);
 		return () => observer.unobserve(host);
-	}, [leftBreakpoint, rightBreakpoint]);
+	}, [breakpoint]);
 
 	useStyleSheet(css`
-		@container (min-width: ${leftBreakpoint}px) {
-			.side.left {
+		@container (min-width: ${breakpoint}px) {
+			.side {
 				position: static;
 				box-shadow: none;
 				z-index: unset;
 			}
 
-			:host([left-drawer-open]) .click-layer {
+			:host([drawer-open]) .click-layer {
 				display: none;
 			}
 
-			:host([left-drawer-open]) {
-				--left-drawer-current-width: var(--left-drawer-width);
-				--cosmoz-side-drawer-layout-left-gap: var(--cz-spacing);
-			}
-		}
-	`);
-
-	useStyleSheet(css`
-		@container (min-width: ${rightBreakpoint}px) {
-			.side.right {
-				position: static;
-				box-shadow: none;
-				z-index: unset;
-			}
-
-			:host([right-drawer-open]) .click-layer {
-				display: none;
-			}
-
-			:host([right-drawer-open]) {
-				--right-drawer-current-width: var(--right-drawer-width);
-				--cosmoz-side-drawer-layout-right-gap: var(--cz-spacing);
+			:host([drawer-open]) {
+				--drawer-current-width: var(--drawer-width);
+				--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
 			}
 		}
 	`);
 
 	return html`
 		<div class="wrapper">
-			<slot name="left-drawer" class="side left"></slot>
+			<slot name="drawer" class="side"></slot>
 			<div class="main-wrapper">
 				<div
 					class="click-layer"
@@ -85,7 +60,6 @@ const CosmozSideDrawerLayout = (host: Element & Props) => {
 				></div>
 				<slot class="main" part="main"></slot>
 			</div>
-			<slot name="right-drawer" class="side right"></slot>
 		</div>
 	`;
 };
@@ -106,21 +80,13 @@ const style = css`
 		opacity: 0;
 	}
 
-	:host([left-drawer-open]) .click-layer,
-	:host([right-drawer-open]) .click-layer {
-		display: block;
-		opacity: 1;
-	}
-
-	:host([left-drawer-open]) .click-layer,
-	:host([right-drawer-open]) .click-layer {
+	:host([drawer-open]) .click-layer {
 		display: block;
 		opacity: 1;
 	}
 
 	@starting-style {
-		:host([left-drawer-open]) .click-layer,
-		:host([right-drawer-open]) .click-layer {
+		:host([drawer-open]) .click-layer {
 			opacity: 0;
 		}
 	}
@@ -152,28 +118,18 @@ const style = css`
 		contain: paint;
 		container-type: inline-size;
 
-		--right-drawer-width: var(
-			--cosmoz-side-drawer-layout-right-drawer-width,
+		--drawer-width: var(
+			--cosmoz-side-drawer-layout-drawer-width,
 			min(400px, 100cqw)
 		);
-		--right-drawer-current-width: 0px;
-		--left-drawer-width: var(
-			--cosmoz-side-drawer-layout-left-drawer-width,
-			min(400px, 100cqw)
-		);
-		--left-drawer-current-width: 0px;
+		--drawer-current-width: 0px;
 
 		margin: 0 auto;
 	}
 
-	:host([left-drawer-open]) {
-		--left-drawer-current-width: var(--left-drawer-width);
-		--cosmoz-side-drawer-layout-left-gap: var(--cz-spacing);
-	}
-
-	:host([right-drawer-open]) {
-		--right-drawer-current-width: var(--right-drawer-width);
-		--cosmoz-side-drawer-layout-right-gap: var(--cz-spacing);
+	:host([drawer-open]) {
+		--drawer-current-width: var(--drawer-width);
+		--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
 	}
 
 	.wrapper {
@@ -188,9 +144,9 @@ const style = css`
 	.side {
 		position: fixed;
 		display: block;
-		flex: 0 1 auto;
 		flex: none;
 		min-width: 0;
+		width: var(--drawer-current-width, 0);
 		height: 100%;
 		transition: width 0.2s ease-in-out;
 		contain: paint;
@@ -203,16 +159,15 @@ const style = css`
 		z-index: 1000;
 	}
 
-	.left {
+	:host(:not([side='right'])) .side {
 		left: 0;
-		width: var(--left-drawer-current-width, 0);
-		margin-right: var(--cosmoz-side-drawer-layout-left-gap, var(--cz-spacing));
+		margin-right: var(--cosmoz-side-drawer-layout-gap, var(--cz-spacing));
 	}
 
-	.right {
+	:host([side='right']) .side {
 		right: 0;
-		width: var(--right-drawer-current-width, 0);
-		margin-left: var(--cosmoz-side-drawer-layout-right-gap, var(--cz-spacing));
+		margin-left: var(--cosmoz-side-drawer-layout-gap, var(--cz-spacing));
+		order: 1;
 	}
 
 	.main {
@@ -220,12 +175,8 @@ const style = css`
 		flex: 1 1 auto;
 	}
 
-	::slotted([slot='left-drawer']) {
-		width: var(--left-drawer-width);
-	}
-
-	::slotted([slot='right-drawer']) {
-		width: var(--right-drawer-width);
+	::slotted([slot='drawer']) {
+		width: var(--drawer-width);
 	}
 `;
 
@@ -233,7 +184,7 @@ customElements.define(
 	'cosmoz-side-drawer-layout',
 	component(CosmozSideDrawerLayout, {
 		styleSheets: [style],
-		observedAttributes: ['left-breakpoint', 'right-breakpoint'],
+		observedAttributes: ['breakpoint'],
 	}),
 );
 
