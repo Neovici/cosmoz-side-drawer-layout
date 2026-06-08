@@ -164,7 +164,7 @@ export const AlwaysSideMode: Story = {
 	args: {
 		breakpoint: 0,
 		side: 'left',
-		drawerOpen: false,
+		drawerOpen: true,
 	},
 	render: (args) => html`
 		<cosmoz-side-drawer-layout
@@ -195,7 +195,6 @@ export const FinanceDashboard: Story = {
 				left: 0;
 				right: 0;
 				--cosmoz-side-drawer-layout-drawer-width: min(260px, 80cqw);
-				--cosmoz-side-drawer-layout-backdrop-color: rgb(10 13 18 / 0.35);
 				background: var(--cz-color-bg-secondary, #f9fafb);
 				color: var(--cz-color-text-primary, #181d27);
 				font-family: var(--cz-font-body, system-ui, sans-serif);
@@ -207,7 +206,7 @@ export const FinanceDashboard: Story = {
 			}
 
 			.finance-story .finance-inner {
-				--cosmoz-side-drawer-layout-backdrop-color: rgb(10 13 18 / 0.35);
+				--cosmoz-side-drawer-layout-drawer-width: min(420px, 100cqw);
 				height: 100%;
 			}
 
@@ -231,6 +230,7 @@ export const FinanceDashboard: Story = {
 				--drawer-border-left: 1px solid
 					var(--cz-color-border-secondary, #e9eaeb);
 				--drawer-border-right: 0;
+				background: transparent;
 			}
 
 			/* ─── Left Nav ─── */
@@ -819,6 +819,7 @@ export const FinanceDashboard: Story = {
 
 			.fin-notif-title {
 				font-weight: var(--cz-font-weight-medium, 500);
+				color: var(--cz-color-text-secondary, #535862);
 			}
 
 			.fin-notif-time {
@@ -920,6 +921,7 @@ export const FinanceDashboard: Story = {
 				<cosmoz-side-drawer-layout
 					class="finance-inner"
 					side="right"
+					breakpoint="9999"
 					@close=${closeFinanceNotifications}
 				>
 					<main class="fin-main">
@@ -1532,7 +1534,6 @@ export const PizzaOrderMap: Story = {
 				<cosmoz-side-drawer-layout
 					class="pizza-inner"
 					side="right"
-					breakpoint="9999"
 					@close=${closeDrawer}
 				>
 					<main class="pizza-main">
