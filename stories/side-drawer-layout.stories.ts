@@ -49,102 +49,39 @@ const closeDrawer = (event: CustomEvent) => {
 	el.removeAttribute('right-drawer-open');
 };
 
-const toggleLeftDrawer = (event: Event) => {
-	const story = (event.currentTarget as HTMLElement).closest('.story-app');
-	const layout = story?.querySelector('cosmoz-side-drawer-layout');
-
+const toggleDrawer = (attr: string) => (event: Event) => {
+	const layout = (event.currentTarget as HTMLElement)
+		.closest('.story-app')
+		?.querySelector('cosmoz-side-drawer-layout');
 	if (!layout) {
 		return;
 	}
-
-	layout.toggleAttribute(
-		'left-drawer-open',
-		!layout.hasAttribute('left-drawer-open'),
-	);
+	layout.toggleAttribute(attr, !layout.hasAttribute(attr));
 };
 
-const toggleRightDrawer = (event: Event) => {
-	const story = (event.currentTarget as HTMLElement).closest('.story-app');
-	const layout = story?.querySelector('cosmoz-side-drawer-layout');
+const toggleLeftDrawer = toggleDrawer('left-drawer-open');
+const toggleRightDrawer = toggleDrawer('right-drawer-open');
 
-	if (!layout) {
-		return;
-	}
-
-	layout.toggleAttribute(
-		'right-drawer-open',
-		!layout.hasAttribute('right-drawer-open'),
-	);
-};
+const renderBasic = (args: StoryArgs) => html`
+	<cosmoz-side-drawer-layout
+		breakpoint=${args.breakpoint}
+		?left-drawer-open=${args.leftDrawerOpen}
+		?right-drawer-open=${args.rightDrawerOpen}
+		@close=${(e: CustomEvent) => args.onClose(e.detail)}
+		style="height: 400px; border: 1px solid #ddd;"
+	>
+		<cosmoz-side-panel slot="left">
+			<div style="padding: 16px;">Left Drawer Content</div>
+		</cosmoz-side-panel>
+		<div style="padding: 16px;">Main Content Area</div>
+		<cosmoz-side-panel slot="right">
+			<div style="padding: 16px;">Right Drawer Content</div>
+		</cosmoz-side-panel>
+	</cosmoz-side-drawer-layout>
+`;
 
 export const Default: Story = {
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			?left-drawer-open=${args.leftDrawerOpen}
-			?right-drawer-open=${args.rightDrawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="left">
-				<div style="padding: 16px;">Left Drawer Content</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-			<cosmoz-side-panel slot="right">
-				<div style="padding: 16px;">Right Drawer Content</div>
-			</cosmoz-side-panel>
-		</cosmoz-side-drawer-layout>
-	`,
-};
-
-export const RightDrawer: Story = {
-	args: {
-		breakpoint: 1600,
-		leftDrawerOpen: false,
-		rightDrawerOpen: true,
-	},
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			?left-drawer-open=${args.leftDrawerOpen}
-			?right-drawer-open=${args.rightDrawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="left">
-				<div style="padding: 16px;">Left Drawer Content</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-			<cosmoz-side-panel slot="right">
-				<div style="padding: 16px;">Right Drawer Content</div>
-			</cosmoz-side-panel>
-		</cosmoz-side-drawer-layout>
-	`,
-};
-
-export const LeftDrawer: Story = {
-	args: {
-		breakpoint: 1600,
-		leftDrawerOpen: true,
-		rightDrawerOpen: false,
-	},
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			?left-drawer-open=${args.leftDrawerOpen}
-			?right-drawer-open=${args.rightDrawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="left">
-				<div style="padding: 16px;">Left Drawer Content</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-			<cosmoz-side-panel slot="right">
-				<div style="padding: 16px;">Right Drawer Content</div>
-			</cosmoz-side-panel>
-		</cosmoz-side-drawer-layout>
-	`,
+	render: renderBasic,
 };
 
 export const AlwaysSideMode: Story = {
@@ -153,23 +90,7 @@ export const AlwaysSideMode: Story = {
 		leftDrawerOpen: true,
 		rightDrawerOpen: false,
 	},
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			?left-drawer-open=${args.leftDrawerOpen}
-			?right-drawer-open=${args.rightDrawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="left">
-				<div style="padding: 16px;">Left Drawer (always side mode)</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-			<cosmoz-side-panel slot="right">
-				<div style="padding: 16px;">Right Drawer Content</div>
-			</cosmoz-side-panel>
-		</cosmoz-side-drawer-layout>
-	`,
+	render: renderBasic,
 };
 
 const collapseFinanceNav = (event: Event) => {
