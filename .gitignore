@@ -7,3 +7,4 @@ coverage/
 storybook-static/
 /.envrc
 /.npmrc
+.playwright-mcp/
