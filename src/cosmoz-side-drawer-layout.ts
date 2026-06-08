@@ -11,10 +11,30 @@ const parseBreakpoint = (value: string | undefined, fallback: number) => {
 	return Number.isNaN(parsed) ? fallback : parsed;
 };
 
+const sideModeRules = `
+	.side {
+		position: static;
+		box-shadow: none;
+		z-index: unset;
+	}
+
+	:host([drawer-open]) .click-layer {
+		display: none;
+	}
+
+	:host([drawer-open]) {
+		--drawer-current-width: var(--drawer-width);
+		--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
+	}
+`;
+
 const CosmozSideDrawerLayout = (host: Element & Props) => {
 	const breakpoint = parseBreakpoint(host.breakpoint, 1024);
 
 	useEffect(() => {
+		if (breakpoint <= 0) {
+			return;
+		}
 		let lastObservedSize = 0;
 		const observer = new ResizeObserver((entries) => {
 			const newSize = entries[0].contentRect.width;
@@ -32,22 +52,9 @@ const CosmozSideDrawerLayout = (host: Element & Props) => {
 	}, [breakpoint]);
 
 	useStyleSheet(css`
-		@container (min-width: ${breakpoint}px) {
-			.side {
-				position: static;
-				box-shadow: none;
-				z-index: unset;
-			}
-
-			:host([drawer-open]) .click-layer {
-				display: none;
-			}
-
-			:host([drawer-open]) {
-				--drawer-current-width: var(--drawer-width);
-				--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
-			}
-		}
+		${breakpoint > 0
+			? `@container (min-width: ${breakpoint}px) {${sideModeRules}}`
+			: sideModeRules}
 	`);
 
 	return html`
@@ -161,13 +168,19 @@ const style = css`
 
 	:host(:not([side='right'])) .side {
 		left: 0;
+	}
+
+	:host([drawer-open]:not([side='right'])) .side {
 		margin-right: var(--cosmoz-side-drawer-layout-gap, var(--cz-spacing));
 	}
 
 	:host([side='right']) .side {
 		right: 0;
-		margin-left: var(--cosmoz-side-drawer-layout-gap, var(--cz-spacing));
 		order: 1;
+	}
+
+	:host([drawer-open][side='right']) .side {
+		margin-left: var(--cosmoz-side-drawer-layout-gap, var(--cz-spacing));
 	}
 
 	.main {
@@ -177,6 +190,7 @@ const style = css`
 
 	::slotted([slot='drawer']) {
 		width: var(--drawer-width);
+		transition: width 0.2s ease-in-out;
 	}
 `;
 
