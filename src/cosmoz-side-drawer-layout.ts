@@ -3,7 +3,6 @@ import { component, css, html } from '@pionjs/pion';
 
 type Props = {
 	breakpoint?: string;
-	side?: 'left' | 'right';
 };
 
 const parseBreakpoint = (value: string | undefined, fallback: number) => {
@@ -16,24 +15,30 @@ const sideModeRules = `
 		--drawer-mode: side;
 	}
 
-	.side {
+	.side-left,
+	.side-right {
 		position: static;
 		box-shadow: none;
 		z-index: unset;
 	}
 
-	:host([drawer-open]) .click-layer {
+	:host(:is([left-drawer-open], [right-drawer-open])) .click-layer {
 		display: none;
 	}
 
-	:host([drawer-open]) {
-		--drawer-current-width: var(--drawer-width);
+	:host([left-drawer-open]) {
+		--left-drawer-current-width: var(--left-drawer-width);
+		--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
+	}
+
+	:host([right-drawer-open]) {
+		--right-drawer-current-width: var(--right-drawer-width);
 		--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
 	}
 `;
 
 const CosmozSideDrawerLayout = (host: Element & Props) => {
-	const breakpoint = parseBreakpoint(host.breakpoint, 1024);
+	const breakpoint = parseBreakpoint(host.breakpoint, 1460);
 
 	useStyleSheet(css`
 		${breakpoint > 0
@@ -43,7 +48,7 @@ const CosmozSideDrawerLayout = (host: Element & Props) => {
 
 	return html`
 		<div class="wrapper">
-			<slot name="drawer" class="side"></slot>
+			<slot name="left" class="side side-left"></slot>
 			<div class="main-wrapper">
 				<div
 					class="click-layer"
@@ -51,6 +56,7 @@ const CosmozSideDrawerLayout = (host: Element & Props) => {
 				></div>
 				<slot class="main" part="main"></slot>
 			</div>
+			<slot name="right" class="side side-right"></slot>
 		</div>
 	`;
 };
@@ -71,13 +77,13 @@ const style = css`
 		opacity: 0;
 	}
 
-	:host([drawer-open]) .click-layer {
+	:host(:is([left-drawer-open], [right-drawer-open])) .click-layer {
 		display: block;
 		opacity: 1;
 	}
 
 	@starting-style {
-		:host([drawer-open]) .click-layer {
+		:host(:is([left-drawer-open], [right-drawer-open])) .click-layer {
 			opacity: 0;
 		}
 	}
@@ -109,17 +115,28 @@ const style = css`
 		contain: paint;
 		container-type: inline-size;
 
-		--drawer-width: var(
-			--cosmoz-side-drawer-layout-drawer-width,
+		--left-drawer-width: var(
+			--cosmoz-side-drawer-layout-left-drawer-width,
 			min(400px, 100cqw)
 		);
-		--drawer-current-width: 0px;
+		--left-drawer-current-width: 0px;
+
+		--right-drawer-width: var(
+			--cosmoz-side-drawer-layout-right-drawer-width,
+			min(400px, 100cqw)
+		);
+		--right-drawer-current-width: 0px;
 
 		margin: 0 auto;
 	}
 
-	:host([drawer-open]) {
-		--drawer-current-width: var(--drawer-width);
+	:host([left-drawer-open]) {
+		--left-drawer-current-width: var(--left-drawer-width);
+		--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
+	}
+
+	:host([right-drawer-open]) {
+		--right-drawer-current-width: var(--right-drawer-width);
 		--cosmoz-side-drawer-layout-gap: var(--cz-spacing);
 	}
 
@@ -137,33 +154,37 @@ const style = css`
 		display: block;
 		flex: none;
 		min-width: 0;
-		width: var(--drawer-current-width, 0);
 		height: 100%;
 		transition: width 0.2s ease-in-out;
 		contain: paint;
-		box-shadow:
-			-6px 0px 16px rgba(16, 24, 40, 0.06),
-			-1px 0px 8px rgba(16, 24, 40, 0.1);
 		max-width: 100cqw;
 		box-sizing: border-box;
 		background: var(--primary-background-color, #fff);
 		z-index: 1000;
 	}
 
-	:host(:not([side='right'])) .side {
+	.side-left {
 		left: 0;
+		width: var(--left-drawer-current-width, 0);
+		box-shadow:
+			-6px 0px 16px rgba(16, 24, 40, 0.06),
+			-1px 0px 8px rgba(16, 24, 40, 0.1);
 	}
 
-	:host([drawer-open]:not([side='right'])) .side {
+	.side-right {
+		right: 0;
+		order: 1;
+		width: var(--right-drawer-current-width, 0);
+		box-shadow:
+			6px 0px 16px rgba(16, 24, 40, 0.06),
+			1px 0px 8px rgba(16, 24, 40, 0.1);
+	}
+
+	:host([left-drawer-open]) .side-left {
 		margin-right: var(--cosmoz-side-drawer-layout-gap, var(--cz-spacing));
 	}
 
-	:host([side='right']) .side {
-		right: 0;
-		order: 1;
-	}
-
-	:host([drawer-open][side='right']) .side {
+	:host([right-drawer-open]) .side-right {
 		margin-left: var(--cosmoz-side-drawer-layout-gap, var(--cz-spacing));
 	}
 
@@ -172,8 +193,13 @@ const style = css`
 		flex: 1 1 auto;
 	}
 
-	::slotted([slot='drawer']) {
-		width: var(--drawer-width);
+	::slotted([slot='left']) {
+		width: var(--left-drawer-width);
+		transition: width 0.2s ease-in-out;
+	}
+
+	::slotted([slot='right']) {
+		width: var(--right-drawer-width);
 		transition: width 0.2s ease-in-out;
 	}
 `;

@@ -7,8 +7,8 @@ import '../src/cosmoz-side-panel';
 
 interface StoryArgs {
 	breakpoint: number;
-	side: 'left' | 'right';
-	drawerOpen: boolean;
+	leftDrawerOpen: boolean;
+	rightDrawerOpen: boolean;
 	onClose: ReturnType<typeof fn>;
 }
 
@@ -22,20 +22,19 @@ const meta: Meta<StoryArgs> = {
 			description:
 				'Width breakpoint (px) for side/overlay switch. 0 = always side mode.',
 		},
-		side: {
-			control: 'select',
-			options: ['left', 'right'],
-			description: 'Which side the drawer opens on.',
-		},
-		drawerOpen: {
+		leftDrawerOpen: {
 			control: 'boolean',
-			description: 'Opens the drawer (overlay mode)',
+			description: 'Opens the left drawer (overlay mode)',
+		},
+		rightDrawerOpen: {
+			control: 'boolean',
+			description: 'Opens the right drawer (overlay mode)',
 		},
 	},
 	args: {
 		breakpoint: 1024,
-		side: 'left',
-		drawerOpen: false,
+		leftDrawerOpen: false,
+		rightDrawerOpen: false,
 		onClose: fn(),
 	},
 };
@@ -45,10 +44,12 @@ export default meta;
 type Story = StoryObj<StoryArgs>;
 
 const closeDrawer = (event: CustomEvent) => {
-	(event.currentTarget as HTMLElement).removeAttribute('drawer-open');
+	const el = event.currentTarget as HTMLElement;
+	el.removeAttribute('left-drawer-open');
+	el.removeAttribute('right-drawer-open');
 };
 
-const toggleDrawer = (event: Event) => {
+const toggleLeftDrawer = (event: Event) => {
 	const story = (event.currentTarget as HTMLElement).closest('.story-app');
 	const layout = story?.querySelector('cosmoz-side-drawer-layout');
 
@@ -56,18 +57,119 @@ const toggleDrawer = (event: Event) => {
 		return;
 	}
 
-	layout.toggleAttribute('drawer-open', !layout.hasAttribute('drawer-open'));
+	layout.toggleAttribute(
+		'left-drawer-open',
+		!layout.hasAttribute('left-drawer-open'),
+	);
 };
 
-const toggleDrawerInLayout = (event: Event, selector: string) => {
+const toggleRightDrawer = (event: Event) => {
 	const story = (event.currentTarget as HTMLElement).closest('.story-app');
-	const layout = story?.querySelector(selector) as HTMLElement | null;
+	const layout = story?.querySelector('cosmoz-side-drawer-layout');
 
 	if (!layout) {
 		return;
 	}
 
-	layout.toggleAttribute('drawer-open', !layout.hasAttribute('drawer-open'));
+	layout.toggleAttribute(
+		'right-drawer-open',
+		!layout.hasAttribute('right-drawer-open'),
+	);
+};
+
+export const Default: Story = {
+	render: (args) => html`
+		<cosmoz-side-drawer-layout
+			breakpoint=${args.breakpoint}
+			?left-drawer-open=${args.leftDrawerOpen}
+			?right-drawer-open=${args.rightDrawerOpen}
+			@close=${(e: CustomEvent) => args.onClose(e.detail)}
+			style="height: 400px; border: 1px solid #ddd;"
+		>
+			<cosmoz-side-panel slot="left">
+				<div style="padding: 16px;">Left Drawer Content</div>
+			</cosmoz-side-panel>
+			<div style="padding: 16px;">Main Content Area</div>
+			<cosmoz-side-panel slot="right">
+				<div style="padding: 16px;">Right Drawer Content</div>
+			</cosmoz-side-panel>
+		</cosmoz-side-drawer-layout>
+	`,
+};
+
+export const RightDrawer: Story = {
+	args: {
+		breakpoint: 1600,
+		leftDrawerOpen: false,
+		rightDrawerOpen: true,
+	},
+	render: (args) => html`
+		<cosmoz-side-drawer-layout
+			breakpoint=${args.breakpoint}
+			?left-drawer-open=${args.leftDrawerOpen}
+			?right-drawer-open=${args.rightDrawerOpen}
+			@close=${(e: CustomEvent) => args.onClose(e.detail)}
+			style="height: 400px; border: 1px solid #ddd;"
+		>
+			<cosmoz-side-panel slot="left">
+				<div style="padding: 16px;">Left Drawer Content</div>
+			</cosmoz-side-panel>
+			<div style="padding: 16px;">Main Content Area</div>
+			<cosmoz-side-panel slot="right">
+				<div style="padding: 16px;">Right Drawer Content</div>
+			</cosmoz-side-panel>
+		</cosmoz-side-drawer-layout>
+	`,
+};
+
+export const LeftDrawer: Story = {
+	args: {
+		breakpoint: 1600,
+		leftDrawerOpen: true,
+		rightDrawerOpen: false,
+	},
+	render: (args) => html`
+		<cosmoz-side-drawer-layout
+			breakpoint=${args.breakpoint}
+			?left-drawer-open=${args.leftDrawerOpen}
+			?right-drawer-open=${args.rightDrawerOpen}
+			@close=${(e: CustomEvent) => args.onClose(e.detail)}
+			style="height: 400px; border: 1px solid #ddd;"
+		>
+			<cosmoz-side-panel slot="left">
+				<div style="padding: 16px;">Left Drawer Content</div>
+			</cosmoz-side-panel>
+			<div style="padding: 16px;">Main Content Area</div>
+			<cosmoz-side-panel slot="right">
+				<div style="padding: 16px;">Right Drawer Content</div>
+			</cosmoz-side-panel>
+		</cosmoz-side-drawer-layout>
+	`,
+};
+
+export const AlwaysSideMode: Story = {
+	args: {
+		breakpoint: 0,
+		leftDrawerOpen: true,
+		rightDrawerOpen: false,
+	},
+	render: (args) => html`
+		<cosmoz-side-drawer-layout
+			breakpoint=${args.breakpoint}
+			?left-drawer-open=${args.leftDrawerOpen}
+			?right-drawer-open=${args.rightDrawerOpen}
+			@close=${(e: CustomEvent) => args.onClose(e.detail)}
+			style="height: 400px; border: 1px solid #ddd;"
+		>
+			<cosmoz-side-panel slot="left">
+				<div style="padding: 16px;">Left Drawer (always side mode)</div>
+			</cosmoz-side-panel>
+			<div style="padding: 16px;">Main Content Area</div>
+			<cosmoz-side-panel slot="right">
+				<div style="padding: 16px;">Right Drawer Content</div>
+			</cosmoz-side-panel>
+		</cosmoz-side-drawer-layout>
+	`,
 };
 
 const collapseFinanceNav = (event: Event) => {
@@ -86,102 +188,6 @@ const expandFinanceNav = (event: Event) => {
 	story.classList.remove('is-nav-collapsed');
 };
 
-const toggleFinanceNotifications = (event: Event) => {
-	const story = (event.currentTarget as HTMLElement).closest('.finance-story');
-	const inner = story?.querySelector('.finance-inner') as HTMLElement | null;
-	if (!inner) {
-		return;
-	}
-	inner.toggleAttribute('drawer-open', !inner.hasAttribute('drawer-open'));
-};
-
-const closeFinanceNotifications = (event: CustomEvent) => {
-	(event.currentTarget as HTMLElement).removeAttribute('drawer-open');
-};
-
-export const Default: Story = {
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			side=${args.side}
-			?drawer-open=${args.drawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="drawer">
-				<div style="padding: 16px;">Drawer Content</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-		</cosmoz-side-drawer-layout>
-	`,
-};
-
-export const RightDrawer: Story = {
-	args: {
-		breakpoint: 1600,
-		side: 'right',
-		drawerOpen: true,
-	},
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			side=${args.side}
-			?drawer-open=${args.drawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="drawer">
-				<div style="padding: 16px;">Right Drawer Content</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-		</cosmoz-side-drawer-layout>
-	`,
-};
-
-export const LeftDrawer: Story = {
-	args: {
-		breakpoint: 1600,
-		side: 'left',
-		drawerOpen: true,
-	},
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			side=${args.side}
-			?drawer-open=${args.drawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="drawer">
-				<div style="padding: 16px;">Left Drawer Content</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-		</cosmoz-side-drawer-layout>
-	`,
-};
-
-export const AlwaysSideMode: Story = {
-	args: {
-		breakpoint: 0,
-		side: 'left',
-		drawerOpen: true,
-	},
-	render: (args) => html`
-		<cosmoz-side-drawer-layout
-			breakpoint=${args.breakpoint}
-			side=${args.side}
-			?drawer-open=${args.drawerOpen}
-			@close=${(e: CustomEvent) => args.onClose(e.detail)}
-			style="height: 400px; border: 1px solid #ddd;"
-		>
-			<cosmoz-side-panel slot="drawer">
-				<div style="padding: 16px;">Drawer (always side mode)</div>
-			</cosmoz-side-panel>
-			<div style="padding: 16px;">Main Content Area</div>
-		</cosmoz-side-drawer-layout>
-	`,
-};
-
 export const FinanceDashboard: Story = {
 	parameters: {
 		layout: 'fullscreen',
@@ -194,7 +200,8 @@ export const FinanceDashboard: Story = {
 				bottom: 0;
 				left: 0;
 				right: 0;
-				--cosmoz-side-drawer-layout-drawer-width: min(260px, 80cqw);
+				--cosmoz-side-drawer-layout-left-drawer-width: min(260px, 80cqw);
+				--cosmoz-side-drawer-layout-right-drawer-width: min(420px, 100cqw);
 				background: var(--cz-color-bg-secondary, #f9fafb);
 				color: var(--cz-color-text-primary, #181d27);
 				font-family: var(--cz-font-body, system-ui, sans-serif);
@@ -202,12 +209,7 @@ export const FinanceDashboard: Story = {
 			}
 
 			.finance-story.is-nav-collapsed {
-				--cosmoz-side-drawer-layout-drawer-width: 60px;
-			}
-
-			.finance-story .finance-inner {
-				--cosmoz-side-drawer-layout-drawer-width: min(420px, 100cqw);
-				height: 100%;
+				--cosmoz-side-drawer-layout-left-drawer-width: 60px;
 			}
 
 			.finance-story cosmoz-side-panel {
@@ -217,7 +219,7 @@ export const FinanceDashboard: Story = {
 				--drawer-border-bottom: 0;
 			}
 
-			.finance-story .finance-outer cosmoz-side-panel {
+			.finance-story cosmoz-side-panel[slot='left'] {
 				--drawer-border-right: 1px solid
 					var(--cz-color-border-secondary, #e9eaeb);
 				--drawer-border-left: 0;
@@ -226,7 +228,7 @@ export const FinanceDashboard: Story = {
 				min-height: 100vh;
 			}
 
-			.finance-story .finance-inner cosmoz-side-panel {
+			.finance-story cosmoz-side-panel[slot='right'] {
 				--drawer-border-left: 1px solid
 					var(--cz-color-border-secondary, #e9eaeb);
 				--drawer-border-right: 0;
@@ -521,7 +523,7 @@ export const FinanceDashboard: Story = {
 			.fin-stat {
 				background: var(--cz-color-bg-primary, #fff);
 				border: 1px solid var(--cz-color-border-secondary, #e9eaeb);
-				border-radius: var(--cz-radius-2xl, 1rem);
+				border-radius: var(--cz-radius-2XL, 1rem);
 				box-shadow: var(--cz-shadow-xs, 0 1px 2px rgb(10 13 18 / 0.05));
 				padding: calc(var(--cz-spacing, 0.25rem) * 5);
 			}
@@ -572,7 +574,7 @@ export const FinanceDashboard: Story = {
 			.fin-chart-section {
 				background: var(--cz-color-bg-primary, #fff);
 				border: 1px solid var(--cz-color-border-secondary, #e9eaeb);
-				border-radius: var(--cz-radius-2xl, 1rem);
+				border-radius: var(--cz-radius-2XL, 1rem);
 				box-shadow: var(--cz-shadow-xs, 0 1px 2px rgb(10 13 18 / 0.05));
 				padding: calc(var(--cz-spacing, 0.25rem) * 6);
 			}
@@ -644,7 +646,7 @@ export const FinanceDashboard: Story = {
 			.fin-txn-section {
 				background: var(--cz-color-bg-primary, #fff);
 				border: 1px solid var(--cz-color-border-secondary, #e9eaeb);
-				border-radius: var(--cz-radius-2xl, 1rem);
+				border-radius: var(--cz-radius-2XL, 1rem);
 				box-shadow: var(--cz-shadow-xs, 0 1px 2px rgb(10 13 18 / 0.05));
 				padding: calc(var(--cz-spacing, 0.25rem) * 6);
 			}
@@ -852,12 +854,11 @@ export const FinanceDashboard: Story = {
 
 		<div class="story-app finance-story">
 			<cosmoz-side-drawer-layout
-				class="finance-outer"
-				side="left"
+				breakpoint="1200"
+				left-drawer-open
 				@close=${closeDrawer}
-				breakpoint="720"
 			>
-				<cosmoz-side-panel slot="drawer">
+				<cosmoz-side-panel slot="left">
 					<nav class="fin-nav" aria-label="Finance navigation">
 						<div class="fin-nav-brand">
 							<span class="fin-nav-logo">F</span>
@@ -918,173 +919,166 @@ export const FinanceDashboard: Story = {
 					</nav>
 				</cosmoz-side-panel>
 
-				<cosmoz-side-drawer-layout
-					class="finance-inner"
-					side="right"
-					breakpoint="9999"
-					@close=${closeFinanceNotifications}
-				>
-					<main class="fin-main">
-						<header class="fin-topbar">
-							<div class="fin-topbar-left">
-								<button
-									class="fin-hamburger"
-									type="button"
-									@click=${toggleDrawer}
-									aria-label="Toggle navigation menu"
-								>
-									&#9776;
-								</button>
-								<div>
-									<h1>Good morning, Alex</h1>
-									<p class="fin-muted">
-										Here's your financial overview for today.
-									</p>
-								</div>
+				<main class="fin-main">
+					<header class="fin-topbar">
+						<div class="fin-topbar-left">
+							<button
+								class="fin-hamburger"
+								type="button"
+								@click=${toggleLeftDrawer}
+								aria-label="Toggle navigation menu"
+							>
+								&#9776;
+							</button>
+							<div>
+								<h1>Good morning, Alex</h1>
+								<p class="fin-muted">
+									Here's your financial overview for today.
+								</p>
 							</div>
-							<div class="fin-topbar-right">
-								<button
-									class="fin-icon-btn"
-									type="button"
-									@click=${toggleFinanceNotifications}
-									aria-label="Open notifications"
-								>
-									&#128276;
-									<span class="fin-notif-badge"></span>
-								</button>
-								<div class="fin-avatar">AK</div>
-							</div>
-						</header>
+						</div>
+						<div class="fin-topbar-right">
+							<button
+								class="fin-icon-btn"
+								type="button"
+								@click=${toggleRightDrawer}
+								aria-label="Open notifications"
+							>
+								&#128276;
+								<span class="fin-notif-badge"></span>
+							</button>
+							<div class="fin-avatar">AK</div>
+						</div>
+					</header>
 
-						<section class="fin-stats">
-							<div class="fin-stat">
-								<p class="fin-stat-label">Total Balance</p>
-								<h2 class="fin-stat-value">$48,290</h2>
-								<span class="fin-stat-change up">&#8593; 12.4%</span>
-							</div>
-							<div class="fin-stat">
-								<p class="fin-stat-label">Monthly Income</p>
-								<h2 class="fin-stat-value">$7,840</h2>
-								<span class="fin-stat-change up">&#8593; 3.2%</span>
-							</div>
-							<div class="fin-stat">
-								<p class="fin-stat-label">Monthly Expenses</p>
-								<h2 class="fin-stat-value">$4,120</h2>
-								<span class="fin-stat-change down">&#8595; 1.8%</span>
-							</div>
-							<div class="fin-stat">
-								<p class="fin-stat-label">Savings Rate</p>
-								<h2 class="fin-stat-value">47.4%</h2>
-								<span class="fin-stat-change up">&#8593; 5.1%</span>
-							</div>
-						</section>
+					<section class="fin-stats">
+						<div class="fin-stat">
+							<p class="fin-stat-label">Total Balance</p>
+							<h2 class="fin-stat-value">$48,290</h2>
+							<span class="fin-stat-change up">&#8593; 12.4%</span>
+						</div>
+						<div class="fin-stat">
+							<p class="fin-stat-label">Monthly Income</p>
+							<h2 class="fin-stat-value">$7,840</h2>
+							<span class="fin-stat-change up">&#8593; 3.2%</span>
+						</div>
+						<div class="fin-stat">
+							<p class="fin-stat-label">Monthly Expenses</p>
+							<h2 class="fin-stat-value">$4,120</h2>
+							<span class="fin-stat-change down">&#8595; 1.8%</span>
+						</div>
+						<div class="fin-stat">
+							<p class="fin-stat-label">Savings Rate</p>
+							<h2 class="fin-stat-value">47.4%</h2>
+							<span class="fin-stat-change up">&#8593; 5.1%</span>
+						</div>
+					</section>
 
-						<section class="fin-chart-section">
-							<div class="fin-chart-header">
-								<h3>Revenue Trend</h3>
+					<section class="fin-chart-section">
+						<div class="fin-chart-header">
+							<h3>Revenue Trend</h3>
+						</div>
+						<div class="fin-chart-mocked">
+							<div class="fin-chart-bar-group">
+								<div class="fin-chart-bar" style="height: 45%;"></div>
+								<div class="fin-chart-bar" style="height: 62%;"></div>
+								<div class="fin-chart-bar" style="height: 38%;"></div>
+								<div class="fin-chart-bar" style="height: 74%;"></div>
+								<div class="fin-chart-bar" style="height: 55%;"></div>
+								<div class="fin-chart-bar" style="height: 88%;"></div>
+								<div class="fin-chart-bar" style="height: 70%;"></div>
+								<div class="fin-chart-bar" style="height: 52%;"></div>
+								<div class="fin-chart-bar" style="height: 82%;"></div>
+								<div class="fin-chart-bar" style="height: 65%;"></div>
+								<div class="fin-chart-bar" style="height: 91%;"></div>
+								<div class="fin-chart-bar" style="height: 78%;"></div>
 							</div>
-							<div class="fin-chart-mocked">
-								<div class="fin-chart-bar-group">
-									<div class="fin-chart-bar" style="height: 45%;"></div>
-									<div class="fin-chart-bar" style="height: 62%;"></div>
-									<div class="fin-chart-bar" style="height: 38%;"></div>
-									<div class="fin-chart-bar" style="height: 74%;"></div>
-									<div class="fin-chart-bar" style="height: 55%;"></div>
-									<div class="fin-chart-bar" style="height: 88%;"></div>
-									<div class="fin-chart-bar" style="height: 70%;"></div>
-									<div class="fin-chart-bar" style="height: 52%;"></div>
-									<div class="fin-chart-bar" style="height: 82%;"></div>
-									<div class="fin-chart-bar" style="height: 65%;"></div>
-									<div class="fin-chart-bar" style="height: 91%;"></div>
-									<div class="fin-chart-bar" style="height: 78%;"></div>
-								</div>
-							</div>
-						</section>
+						</div>
+					</section>
 
-						<section class="fin-txn-section">
-							<h3>Recent Transactions</h3>
-							<div class="fin-txn-row">
-								<span class="fin-txn-icon income">&#8593;</span>
-								<div class="fin-txn-details">
-									<p class="fin-txn-name">Salary deposit</p>
-									<p class="fin-txn-date">Jun 1, 2026</p>
-								</div>
-								<span class="fin-txn-amount income">+$7,840.00</span>
+					<section class="fin-txn-section">
+						<h3>Recent Transactions</h3>
+						<div class="fin-txn-row">
+							<span class="fin-txn-icon income">&#8593;</span>
+							<div class="fin-txn-details">
+								<p class="fin-txn-name">Salary deposit</p>
+								<p class="fin-txn-date">Jun 1, 2026</p>
 							</div>
-							<div class="fin-txn-row">
-								<span class="fin-txn-icon expense">&#8595;</span>
-								<div class="fin-txn-details">
-									<p class="fin-txn-name">Rent payment</p>
-									<p class="fin-txn-date">Jun 1, 2026</p>
-								</div>
-								<span class="fin-txn-amount expense">-$2,100.00</span>
+							<span class="fin-txn-amount income">+$7,840.00</span>
+						</div>
+						<div class="fin-txn-row">
+							<span class="fin-txn-icon expense">&#8595;</span>
+							<div class="fin-txn-details">
+								<p class="fin-txn-name">Rent payment</p>
+								<p class="fin-txn-date">Jun 1, 2026</p>
 							</div>
-							<div class="fin-txn-row">
-								<span class="fin-txn-icon expense">&#8595;</span>
-								<div class="fin-txn-details">
-									<p class="fin-txn-name">Groceries</p>
-									<p class="fin-txn-date">May 30, 2026</p>
-								</div>
-								<span class="fin-txn-amount expense">-$186.50</span>
+							<span class="fin-txn-amount expense">-$2,100.00</span>
+						</div>
+						<div class="fin-txn-row">
+							<span class="fin-txn-icon expense">&#8595;</span>
+							<div class="fin-txn-details">
+								<p class="fin-txn-name">Groceries</p>
+								<p class="fin-txn-date">May 30, 2026</p>
 							</div>
-							<div class="fin-txn-row">
-								<span class="fin-txn-icon income">&#8593;</span>
-								<div class="fin-txn-details">
-									<p class="fin-txn-name">Freelance project</p>
-									<p class="fin-txn-date">May 28, 2026</p>
-								</div>
-								<span class="fin-txn-amount income">+$1,200.00</span>
+							<span class="fin-txn-amount expense">-$186.50</span>
+						</div>
+						<div class="fin-txn-row">
+							<span class="fin-txn-icon income">&#8593;</span>
+							<div class="fin-txn-details">
+								<p class="fin-txn-name">Freelance project</p>
+								<p class="fin-txn-date">May 28, 2026</p>
 							</div>
-						</section>
-					</main>
+							<span class="fin-txn-amount income">+$1,200.00</span>
+						</div>
+					</section>
+				</main>
 
-					<cosmoz-side-panel slot="drawer">
-						<aside class="fin-notif-panel" aria-label="Notifications">
-							<div class="fin-notif-header">
-								<h2>Notifications</h2>
-								<span class="fin-notif-count">4 new</span>
-							</div>
+				<cosmoz-side-panel slot="right">
+					<aside class="fin-notif-panel" aria-label="Notifications">
+						<div class="fin-notif-header">
+							<h2>Notifications</h2>
+							<span class="fin-notif-count">4 new</span>
+						</div>
 
-							<div class="fin-notif-list">
-								<div class="fin-notif-item unread">
-									<span class="fin-notif-dot payment">&#10003;</span>
-									<div class="fin-notif-body">
-										<p class="fin-notif-title">Payment received</p>
-										<p class="fin-notif-time">2 min ago</p>
-									</div>
-								</div>
-								<div class="fin-notif-item unread">
-									<span class="fin-notif-dot alert">&#9888;</span>
-									<div class="fin-notif-body">
-										<p class="fin-notif-title">Spending limit alert</p>
-										<p class="fin-notif-time">18 min ago</p>
-									</div>
-								</div>
-								<div class="fin-notif-item">
-									<span class="fin-notif-dot info">&#8505;</span>
-									<div class="fin-notif-body">
-										<p class="fin-notif-title">Investment maturity</p>
-										<p class="fin-notif-time">1 hour ago</p>
-									</div>
-								</div>
-								<div class="fin-notif-item">
-									<span class="fin-notif-dot payment">&#10003;</span>
-									<div class="fin-notif-body">
-										<p class="fin-notif-title">Transfer completed</p>
-										<p class="fin-notif-time">3 hours ago</p>
-									</div>
-								</div>
-								<div class="fin-notif-item">
-									<span class="fin-notif-dot info">&#8505;</span>
-									<div class="fin-notif-body">
-										<p class="fin-notif-title">Monthly report ready</p>
-										<p class="fin-notif-time">Yesterday</p>
-									</div>
+						<div class="fin-notif-list">
+							<div class="fin-notif-item unread">
+								<span class="fin-notif-dot payment">&#10003;</span>
+								<div class="fin-notif-body">
+									<p class="fin-notif-title">Payment received</p>
+									<p class="fin-notif-time">2 min ago</p>
 								</div>
 							</div>
-						</aside>
-					</cosmoz-side-panel>
-				</cosmoz-side-drawer-layout>
+							<div class="fin-notif-item unread">
+								<span class="fin-notif-dot alert">&#9888;</span>
+								<div class="fin-notif-body">
+									<p class="fin-notif-title">Spending limit alert</p>
+									<p class="fin-notif-time">18 min ago</p>
+								</div>
+							</div>
+							<div class="fin-notif-item">
+								<span class="fin-notif-dot info">&#8505;</span>
+								<div class="fin-notif-body">
+									<p class="fin-notif-title">Investment maturity</p>
+									<p class="fin-notif-time">1 hour ago</p>
+								</div>
+							</div>
+							<div class="fin-notif-item">
+								<span class="fin-notif-dot payment">&#10003;</span>
+								<div class="fin-notif-body">
+									<p class="fin-notif-title">Transfer completed</p>
+									<p class="fin-notif-time">3 hours ago</p>
+								</div>
+							</div>
+							<div class="fin-notif-item">
+								<span class="fin-notif-dot info">&#8505;</span>
+								<div class="fin-notif-body">
+									<p class="fin-notif-title">Monthly report ready</p>
+									<p class="fin-notif-time">Yesterday</p>
+								</div>
+							</div>
+						</div>
+					</aside>
+				</cosmoz-side-panel>
 			</cosmoz-side-drawer-layout>
 		</div>
 	`,
@@ -1102,7 +1096,8 @@ export const PizzaOrderMap: Story = {
 				bottom: 0;
 				left: 0;
 				right: 0;
-				--cosmoz-side-drawer-layout-drawer-width: min(320px, 88cqw);
+				--cosmoz-side-drawer-layout-left-drawer-width: min(320px, 88cqw);
+				--cosmoz-side-drawer-layout-right-drawer-width: min(460px, 94cqw);
 				--cosmoz-side-drawer-layout-backdrop-color: rgb(10 13 18 / 0.28);
 				background:
 					radial-gradient(
@@ -1121,15 +1116,18 @@ export const PizzaOrderMap: Story = {
 				--drawer-border-radius: 0;
 				--drawer-border-top: 0;
 				--drawer-border-bottom: 0;
-				--drawer-border-left: 0;
-				--drawer-border-right: 1px solid
-					var(--cz-color-border-secondary, #e9eaeb);
 			}
 
-			.pizza-story .pizza-inner cosmoz-side-panel {
-				--drawer-border-right: 0;
+			.pizza-story cosmoz-side-panel[slot='left'] {
+				--drawer-border-right: 1px solid
+					var(--cz-color-border-secondary, #e9eaeb);
+				--drawer-border-left: 0;
+			}
+
+			.pizza-story cosmoz-side-panel[slot='right'] {
 				--drawer-border-left: 1px solid
 					var(--cz-color-border-secondary, #e9eaeb);
+				--drawer-border-right: 0;
 			}
 
 			.pizza-menu,
@@ -1151,7 +1149,7 @@ export const PizzaOrderMap: Story = {
 				background:
 					linear-gradient(135deg, rgb(122 39 26 / 0.92), rgb(220 104 3 / 0.9)),
 					var(--cz-color-bg-warning-solid, #dc6803);
-				border-radius: var(--cz-radius-2xl, 1rem);
+				border-radius: var(--cz-radius-2XL, 1rem);
 				box-shadow: var(--cz-shadow-lg, 0 12px 16px rgb(10 13 18 / 0.08));
 				color: var(--cz-color-white, #fff);
 				padding: calc(var(--cz-spacing, 0.25rem) * 5);
@@ -1230,7 +1228,7 @@ export const PizzaOrderMap: Story = {
 					),
 					var(--cz-color-bg-primary, #fff);
 				border: 1px solid var(--cz-color-border-secondary, #e9eaeb);
-				border-radius: var(--cz-radius-3xl, 1.25rem);
+				border-radius: var(--cz-radius-3XL, 1.25rem);
 				box-shadow: var(--cz-shadow-sm, 0 1px 3px rgb(10 13 18 / 0.1));
 				display: grid;
 				gap: calc(var(--cz-spacing, 0.25rem) * 5);
@@ -1302,7 +1300,7 @@ export const PizzaOrderMap: Story = {
 			.pizza-map-card {
 				background: var(--cz-color-bg-primary, #fff);
 				border: 1px solid var(--cz-color-border-secondary, #e9eaeb);
-				border-radius: var(--cz-radius-2xl, 1rem);
+				border-radius: var(--cz-radius-2XL, 1rem);
 				box-shadow: var(--cz-shadow-xs, 0 1px 2px rgb(10 13 18 / 0.05));
 				padding: calc(var(--cz-spacing, 0.25rem) * 5);
 			}
@@ -1394,7 +1392,7 @@ export const PizzaOrderMap: Story = {
 						var(--cz-color-warning-50, #fffaeb)
 					);
 				border: 1px solid var(--cz-color-border-secondary, #e9eaeb);
-				border-radius: var(--cz-radius-3xl, 1.25rem);
+				border-radius: var(--cz-radius-3XL, 1.25rem);
 				min-height: 330px;
 				overflow: hidden;
 				position: relative;
@@ -1404,7 +1402,7 @@ export const PizzaOrderMap: Story = {
 				border: 5px dashed var(--cz-color-warning-600, #dc6803);
 				border-bottom: 0;
 				border-left: 0;
-				border-radius: 0 var(--cz-radius-4xl, 1.5rem) 0 0;
+				border-radius: 0 var(--cz-radius-4XL, 1.5rem) 0 0;
 				height: 44%;
 				left: 24%;
 				position: absolute;
@@ -1457,12 +1455,6 @@ export const PizzaOrderMap: Story = {
 				width: 52px;
 			}
 
-			.pizza-inner {
-				--cosmoz-side-drawer-layout-drawer-width: min(460px, 94cqw);
-				--cosmoz-side-drawer-layout-backdrop-color: rgb(10 13 18 / 0.22);
-				height: 100%;
-			}
-
 			@media (max-width: 880px) {
 				.pizza-hero,
 				.pizza-grid {
@@ -1480,12 +1472,8 @@ export const PizzaOrderMap: Story = {
 		</style>
 
 		<div class="story-app pizza-story">
-			<cosmoz-side-drawer-layout
-				class="pizza-outer"
-				side="left"
-				@close=${closeDrawer}
-			>
-				<cosmoz-side-panel slot="drawer">
+			<cosmoz-side-drawer-layout @close=${closeDrawer}>
+				<cosmoz-side-panel slot="left">
 					<aside class="pizza-menu" aria-label="Order menu">
 						<section class="pizza-restaurant">
 							<p>Now preparing</p>
@@ -1531,139 +1519,130 @@ export const PizzaOrderMap: Story = {
 					</aside>
 				</cosmoz-side-panel>
 
-				<cosmoz-side-drawer-layout
-					class="pizza-inner"
-					side="right"
-					@close=${closeDrawer}
-				>
-					<main class="pizza-main">
-						<section class="pizza-hero">
-							<div class="pizza-order-title">
-								<p class="pizza-eyebrow">Arriving around 7:42 PM</p>
-								<h2>Your pizza is in the oven</h2>
-								<p class="pizza-muted">
-									Marco is preparing your order before it heads across Midtown.
-								</p>
+				<main class="pizza-main">
+					<section class="pizza-hero">
+						<div class="pizza-order-title">
+							<p class="pizza-eyebrow">Arriving around 7:42 PM</p>
+							<h2>Your pizza is in the oven</h2>
+							<p class="pizza-muted">
+								Marco is preparing your order before it heads across Midtown.
+							</p>
+						</div>
+						<div class="pizza-actions">
+							<button
+								class="pizza-button-secondary"
+								type="button"
+								@click=${toggleLeftDrawer}
+							>
+								Order menu
+							</button>
+							<button
+								class="pizza-button"
+								type="button"
+								@click=${toggleRightDrawer}
+							>
+								Show map
+							</button>
+						</div>
+					</section>
+
+					<section class="pizza-grid">
+						<article class="pizza-section">
+							<p class="pizza-muted">Order progress</p>
+							<h3>Almost ready for pickup</h3>
+							<div class="pizza-timeline">
+								<div class="pizza-step">
+									<span class="pizza-dot"></span>
+									<span
+										><strong>Order confirmed</strong><br /><span
+											class="pizza-muted"
+											>Accepted at 7:06 PM.</span
+										></span
+									>
+								</div>
+								<div class="pizza-step">
+									<span class="pizza-dot"></span>
+									<span
+										><strong>Baking now</strong><br /><span class="pizza-muted"
+											>Finishing in the deck oven.</span
+										></span
+									>
+								</div>
+								<div class="pizza-step">
+									<span class="pizza-dot pending"></span>
+									<span
+										><strong>Out for delivery</strong><br /><span
+											class="pizza-muted"
+											>Driver heads your way after pickup.</span
+										></span
+									>
+								</div>
 							</div>
-							<div class="pizza-actions">
-								<button
-									class="pizza-button-secondary"
-									type="button"
-									@click=${(event: Event) =>
-										toggleDrawerInLayout(event, '.pizza-outer')}
-								>
-									Order menu
-								</button>
-								<button
-									class="pizza-button"
-									type="button"
-									@click=${(event: Event) =>
-										toggleDrawerInLayout(event, '.pizza-inner')}
-								>
-									Show map
-								</button>
+						</article>
+
+						<article class="pizza-card">
+							<p class="pizza-muted">Order details</p>
+							<h3>Family dinner</h3>
+							<div class="pizza-items">
+								<div class="pizza-item">
+									<span
+										><strong>1x Pepperoni Grande</strong><br /><span
+											class="pizza-muted"
+											>Extra basil, well done</span
+										></span
+									>
+									<strong>$21.00</strong>
+								</div>
+								<div class="pizza-item">
+									<span
+										><strong>1x Burrata Margherita</strong><br /><span
+											class="pizza-muted"
+											>Add chili oil</span
+										></span
+									>
+									<strong>$19.50</strong>
+								</div>
+								<div class="pizza-item">
+									<span
+										><strong>Garlic knots</strong><br /><span
+											class="pizza-muted"
+											>Parmesan and marinara</span
+										></span
+									>
+									<strong>$7.00</strong>
+								</div>
+								<div class="pizza-total-row">
+									<span class="pizza-pill">Paid with Apple Pay</span
+									><strong>$56.84</strong>
+								</div>
+							</div>
+						</article>
+					</section>
+				</main>
+
+				<cosmoz-side-panel slot="right">
+					<aside class="pizza-map-panel" aria-label="Delivery map">
+						<div>
+							<p class="pizza-muted">Delivery map</p>
+							<h2>Midtown route</h2>
+						</div>
+						<div class="pizza-map" aria-hidden="true">
+							<div class="pizza-route"></div>
+							<div class="pizza-pin restaurant">P</div>
+							<div class="pizza-pin home">H</div>
+						</div>
+						<section class="pizza-map-card">
+							<div class="pizza-driver">
+								<div class="pizza-driver-avatar">DR</div>
+								<div>
+									<h3>Drew is assigned</h3>
+									<p class="pizza-muted">Pickup estimate: 6 minutes</p>
+								</div>
+								<span class="pizza-pill">2.4 mi</span>
 							</div>
 						</section>
-
-						<section class="pizza-grid">
-							<article class="pizza-section">
-								<p class="pizza-muted">Order progress</p>
-								<h3>Almost ready for pickup</h3>
-								<div class="pizza-timeline">
-									<div class="pizza-step">
-										<span class="pizza-dot"></span>
-										<span
-											><strong>Order confirmed</strong><br /><span
-												class="pizza-muted"
-												>Accepted at 7:06 PM.</span
-											></span
-										>
-									</div>
-									<div class="pizza-step">
-										<span class="pizza-dot"></span>
-										<span
-											><strong>Baking now</strong><br /><span
-												class="pizza-muted"
-												>Finishing in the deck oven.</span
-											></span
-										>
-									</div>
-									<div class="pizza-step">
-										<span class="pizza-dot pending"></span>
-										<span
-											><strong>Out for delivery</strong><br /><span
-												class="pizza-muted"
-												>Driver heads your way after pickup.</span
-											></span
-										>
-									</div>
-								</div>
-							</article>
-
-							<article class="pizza-card">
-								<p class="pizza-muted">Order details</p>
-								<h3>Family dinner</h3>
-								<div class="pizza-items">
-									<div class="pizza-item">
-										<span
-											><strong>1x Pepperoni Grande</strong><br /><span
-												class="pizza-muted"
-												>Extra basil, well done</span
-											></span
-										>
-										<strong>$21.00</strong>
-									</div>
-									<div class="pizza-item">
-										<span
-											><strong>1x Burrata Margherita</strong><br /><span
-												class="pizza-muted"
-												>Add chili oil</span
-											></span
-										>
-										<strong>$19.50</strong>
-									</div>
-									<div class="pizza-item">
-										<span
-											><strong>Garlic knots</strong><br /><span
-												class="pizza-muted"
-												>Parmesan and marinara</span
-											></span
-										>
-										<strong>$7.00</strong>
-									</div>
-									<div class="pizza-total-row">
-										<span class="pizza-pill">Paid with Apple Pay</span
-										><strong>$56.84</strong>
-									</div>
-								</div>
-							</article>
-						</section>
-					</main>
-
-					<cosmoz-side-panel slot="drawer">
-						<aside class="pizza-map-panel" aria-label="Delivery map">
-							<div>
-								<p class="pizza-muted">Delivery map</p>
-								<h2>Midtown route</h2>
-							</div>
-							<div class="pizza-map" aria-hidden="true">
-								<div class="pizza-route"></div>
-								<div class="pizza-pin restaurant">P</div>
-								<div class="pizza-pin home">H</div>
-							</div>
-							<section class="pizza-map-card">
-								<div class="pizza-driver">
-									<div class="pizza-driver-avatar">DR</div>
-									<div>
-										<h3>Drew is assigned</h3>
-										<p class="pizza-muted">Pickup estimate: 6 minutes</p>
-									</div>
-									<span class="pizza-pill">2.4 mi</span>
-								</div>
-							</section>
-						</aside>
-					</cosmoz-side-panel>
-				</cosmoz-side-drawer-layout>
+					</aside>
+				</cosmoz-side-panel>
 			</cosmoz-side-drawer-layout>
 		</div>
 	`,
