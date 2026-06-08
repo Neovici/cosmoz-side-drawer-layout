@@ -1,5 +1,5 @@
 import { useStyleSheet } from '@neovici/cosmoz-utils/hooks/use-stylesheet';
-import { component, css, html, useEffect } from '@pionjs/pion';
+import { component, css, html } from '@pionjs/pion';
 
 type Props = {
 	breakpoint?: string;
@@ -12,6 +12,10 @@ const parseBreakpoint = (value: string | undefined, fallback: number) => {
 };
 
 const sideModeRules = `
+	.wrapper {
+		--drawer-mode: side;
+	}
+
 	.side {
 		position: static;
 		box-shadow: none;
@@ -30,26 +34,6 @@ const sideModeRules = `
 
 const CosmozSideDrawerLayout = (host: Element & Props) => {
 	const breakpoint = parseBreakpoint(host.breakpoint, 1024);
-
-	useEffect(() => {
-		if (breakpoint <= 0) {
-			return;
-		}
-		let lastObservedSize = 0;
-		const observer = new ResizeObserver((entries) => {
-			const newSize = entries[0].contentRect.width;
-			if (
-				newSize < lastObservedSize &&
-				lastObservedSize >= breakpoint &&
-				newSize < breakpoint
-			) {
-				host.dispatchEvent(new CustomEvent('close'));
-			}
-			lastObservedSize = newSize;
-		});
-		observer.observe(host);
-		return () => observer.unobserve(host);
-	}, [breakpoint]);
 
 	useStyleSheet(css`
 		${breakpoint > 0
