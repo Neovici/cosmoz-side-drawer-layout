@@ -83,7 +83,7 @@
     "http-server": "^14.1.1",
     "husky": "^9.0.0",
     "jsdom": "^29.0.1",
-    "lint-staged": "^16.2.7",
+    "lint-staged": "^17.0.7",
     "semantic-release": "^25.0.0",
     "shadow-dom-testing-library": "^1.13.1",
     "sinon": "^21.0.3",
